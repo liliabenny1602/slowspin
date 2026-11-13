@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slowspin: a true-to-life record player</title>
+<meta name="description" content="A turntable simulator that behaves like the real thing: handle the record, pick the speed, brush the dust, cue the needle, and get judged on your care.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Fraunces:opsz,wght@9..144,600..900&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="stage" id="screen">
+  <header class="top"><span class="wordmark">Slowspin</span><h1>Spun, and judged.</h1></header>
+
+  <div class="wall">
+    <div>
+      <p class="walltip">Stored upright, cool, dry and out of the sun. Drag a record to the turntable.</p>
+      <div class="shelf" id="shelf"></div>
+    </div>
+    <div>
+      <p class="walltip">Sleeves and cover art. Drag one onto a record.</p>
+      <div class="shelf sm">
+        <div class="tool sup" data-kind="inner"><i class="inner"></i>Anti-static inner</div>
+        <div class="tool sup" data-kind="outer"><i class="outerS"></i>Outer sleeve</div>
+        <div class="tool sup" data-kind="cover"><i class="coverS"></i>Cover art</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table">
+    <section class="station" aria-label="Cleaning station">
+      <h3>Cleaning mat</h3>
+      <svg id="mat" viewBox="-135 -135 270 270">
+        <circle r="131" fill="#E7D7B4" stroke="#2A1B14" stroke-width="3"/>
+        <circle r="122" fill="none" stroke="#2A1B14" stroke-opacity=".25" stroke-width="2" stroke-dasharray="4 6"/>
+        <text id="matTxt" text-anchor="middle" y="5" font-size="15" font-weight="800" fill="#2A1B14" fill-opacity=".55">Drag a record here</text>
+        <g id="matRec"></g>
+      </svg>
+      <div class="tools">
+        <div class="tool" data-kind="bottle" data-f="vinyl"><i class="bottle b1"></i>Vinyl fluid</div>
+        <div class="tool" data-kind="bottle" data-f="glass"><i class="bottle b2"></i>Window cleaner</div>
+        <div class="tool" data-kind="bottle" data-f="alc"><i class="bottle b3"></i>Alcohol mix</div>
+        <div class="tool" data-kind="cloth"><i class="cloth"></i>Microfibre cloth</div>
+      </div>
+      <div class="bars"><div>Grime<i id="cg" class="r"></i></div><div>Wet<i id="cw"></i></div></div>
+      <p class="msg" id="cmsg"></p>
+    </section>
+
+    <section class="deckwrap">
+      <svg id="deck" viewBox="0 0 400 330" role="img" aria-label="Turntable seen from above">
+          <defs>
+            <radialGradient id="grooves" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="2.6" spreadMethod="repeat">
+              <stop offset="0" stop-color="#191514"/><stop offset=".5" stop-color="#2d2725"/><stop offset="1" stop-color="#191514"/>
+            </radialGradient>
+          </defs>
+
+          <rect id="plinth" x="4" y="6" width="392" height="318" rx="24" fill="#F6ECD9" stroke="#2A1B14" stroke-width="3"/>
+          <rect x="14" y="16" width="372" height="298" rx="16" fill="none" stroke="#2A1B14" stroke-opacity=".12" stroke-width="2"/>
+
+          <g transform="translate(155,150)">
+            <circle r="131" fill="#D4CCBE" stroke="#2A1B14" stroke-width="3"/>
+            <g id="platter">
+              <g id="strobe"></g>
+              <circle r="123" fill="#3B3533"/>
+              <circle r="118" fill="none" stroke="#2A2523" stroke-width="2"/>
+              <circle r="60" fill="none" stroke="#2A2523" stroke-width="2"/>
+              <g id="matDust"></g>
+            </g>
+            <g id="recWrap"><g id="rec"></g></g>
+            <g id="sheen" pointer-events="none"></g>
+            <circle r="3.4" fill="#E4DED3" stroke="#2A1B14" stroke-width="1.2" pointer-events="none"/>
+            <g id="brush" pointer-events="none" style="display:none">
+              <rect x="-7" y="-30" width="14" height="60" rx="4" fill="#2A1B14"/>
+              <rect x="-3" y="-27" width="6" height="54" rx="2" fill="#8E8A86"/>
+            </g>
+          </g>
+
+          <!-- controls -->
+          <g id="btnStart" class="ctl" tabindex="0" role="button" aria-label="Start or stop the platter">
+            <circle cx="40" cy="290" r="19" fill="#2A1B14"/>
+            <circle cx="40" cy="290" r="15" fill="#F6ECD9" id="startFace"/>
+            <text x="40" y="293" id="startTxt" text-anchor="middle" font-size="7.5" font-weight="800" fill="#2A1B14">START</text>
+          </g>
+          <g id="btn33" class="ctl" tabindex="0" role="button" aria-label="33 and a third rpm">
+            <rect x="68" y="287" width="30" height="24" rx="8" fill="#2A1B14"/>
+            <text x="83" y="303" text-anchor="middle" font-size="9.5" font-weight="800" fill="#F6ECD9">33⅓</text>
+            <circle cx="83" cy="281" r="2.6" id="led33" fill="#F2B21B"/>
+          </g>
+          <g id="btn45" class="ctl" tabindex="0" role="button" aria-label="45 rpm">
+            <rect x="103" y="292" width="30" height="24" rx="8" fill="#2A1B14"/>
+            <text x="118" y="308" text-anchor="middle" font-size="9.5" font-weight="800" fill="#F6ECD9">45</text>
+            <circle cx="118" cy="286" r="2.6" id="led45" fill="#CFC5B3"/>
+          </g>
+
+          <g id="btnCue" class="ctl" tabindex="0" role="button" aria-label="Cue lever">
+            <rect x="371" y="232" width="18" height="54" rx="9" fill="#E2D8C3" stroke="#2A1B14" stroke-width="2"/>
+            <circle cx="380" cy="275" r="10" fill="#2A1B14" id="cueKnob"/>
+            <text x="380" y="301" text-anchor="middle" font-size="7.5" font-weight="800" fill="#2A1B14">CUE</text>
+          </g>
+
+          <!-- arm rest -->
+          <rect x="328" y="196" width="24" height="14" rx="5" fill="#2A1B14"/>
+
+          <!-- tonearm, drawn pointing straight down, rotated about the pivot -->
+          <g id="arm">
+            <rect x="325" y="20" width="30" height="30" rx="7" fill="#57514E" stroke="#2A1B14" stroke-width="2"/>
+            <line x1="340" y1="50" x2="340" y2="70" stroke="#2A1B14" stroke-width="8"/>
+            <line x1="340" y1="70" x2="340" y2="246" stroke="#2A1B14" stroke-width="9" stroke-linecap="round"/>
+            <line x1="340" y1="70" x2="340" y2="246" stroke="#DDD6CA" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="340" cy="70" r="16" fill="#EBE4D7" stroke="#2A1B14" stroke-width="2.5"/>
+            <circle cx="340" cy="70" r="6" fill="#2A1B14"/>
+            <path d="M351 252 L366 247" stroke="#2A1B14" stroke-width="4.5" stroke-linecap="round"/>
+            <rect x="329" y="242" width="22" height="42" rx="5" fill="#2A1B14"/>
+            <rect x="332.5" y="262" width="15" height="17" rx="3" fill="#F2B21B"/>
+            <rect id="guard" x="330" y="268" width="20" height="18" rx="4" fill="#FFFFFF" fill-opacity=".8" stroke="#2A1B14" stroke-width="1.5"/>
+            <rect id="armHit" x="316" y="226" width="60" height="68" fill="transparent"/>
+          </g>
+
+          <!-- dust cover -->
+          <g id="cover" style="display:none">
+            <rect x="4" y="6" width="392" height="318" rx="24" fill="#FFFFFF" fill-opacity=".34" stroke="#2A1B14" stroke-width="3"/>
+            <path d="M40 6 L150 6 L20 200 L4 200 L4 60 Z" fill="#FFFFFF" fill-opacity=".22"/>
+            <path d="M250 324 L330 324 L396 210 L396 120 Z" fill="#FFFFFF" fill-opacity=".16"/>
+            <rect x="150" y="2" width="100" height="10" rx="4" fill="#2A1B14"/>
+          </g>
+        </svg>
+      <div class="ticket">
+        <div class="np"><span id="npA">No record on the platter</span><small id="npB">Drag one from the shelf</small></div>
+        <button class="btn" id="flip">Flip</button>
+        <label class="vol">VOL<input type="range" id="vol" min="0" max="1" step="0.01" value="0.8" aria-label="Volume"></label>
+      </div>
+    </section>
+
+    <section class="side">
+      <div class="tool" data-kind="brush"><i class="brushT"></i>Carbon fibre brush<br>drag onto the record</div>
+      <nav class="bar">
+        <button class="rb" id="tGuard" aria-pressed="true"><i><svg viewBox="0 0 24 24"><path d="M6 5h12v8a6 6 0 0 1-12 0z"/><path d="M12 13v5"/></svg></i>Guard</button>
+        <button class="rb" id="tCover" aria-pressed="false"><i><svg viewBox="0 0 24 24"><path d="M3 19h18M5 19V9l7-4 7 4v10"/></svg></i>Cover</button>
+        <button class="rb" id="tBench"><i><svg viewBox="0 0 24 24"><path d="M14 6a4 4 0 0 0 5 5l-8 8a2.1 2.1 0 0 1-3-3z"/></svg></i>Service</button>
+      </nav>
+      <button class="pill" id="tHint">HINT</button>
+    </section>
+  </div>
+
+  <input type="file" id="files" accept="audio/*,image/*" multiple hidden>
+  <input type="file" id="coverIn" accept="image/*" hidden>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="sheet" id="sheet" hidden>
+    <button class="x" id="sheetX" aria-label="Close">×</button>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+
+<main class="layout">
+  <aside class="panel" id="guide">
+    <h2>How to play a record</h2>
+    <ol class="steps" id="steps">
+      <li id="c1"><b>Flat, steady surface.</b> Away from the speakers, so vibrations don't make the stylus skip or hum.</li>
+      <li id="c2"><b>Take the record out carefully.</b> Fingertips on the outer rim, thumb on the label. Never the grooves.</li>
+      <li id="c3"><b>Place it on the platter.</b> Centre hole over the spindle, right side up.</li>
+      <li id="c4"><b>Choose the speed.</b> 33⅓ for most 12-inch LPs, 45 for 7-inch singles. Some 12-inch singles play at 45, so check the label.</li>
+      <li id="c5"><b>Do a dust pass.</b> Drag the carbon fibre brush onto the spinning record.</li>
+      <li id="c6"><b>Start the platter</b> and let it reach full speed.</li>
+      <li id="c7"><b>Lower the needle.</b> Guard off, arm over the outer edge, cue lever down.</li>
+      <li id="c8"><b>Listen.</b> Don't bump the table.</li>
+      <li id="c9"><b>Lift the needle when the side ends.</b> Don't leave it in the run-out groove.</li>
+      <li id="c10"><b>Stop the platter,</b> wait until it has fully stopped, then flip or put the record away.</li>
+    </ol>
+    <p class="fine">Built-in sides run about a minute instead of twenty; records pressed from your own songs play at full length. Everything else is to scale: true rotation speeds, true pitch when the speed is wrong.</p>
+  </aside>
+  <aside class="panel" id="care">
+    <h2>Condition</h2>
+    <div class="meters" id="meters"></div>
+    <p class="chain">Stylus → Cantilever → Cartridge → Phono preamp (RIAA) → Speakers</p>
+
+    <details open>
+      <summary>Record care</summary>
+      <ul>
+        <li>Hold records by the edges and label. Never touch the playing surface: skin oils attract dust.</li>
+        <li>Back in the sleeve right after playing. Dust settles fast on a record left out.</li>
+        <li>Anti-static inner sleeves (poly-lined or rice paper) beat plain paper, which can scratch and shed fibres.</li>
+        <li>Store upright like books. Never stacked flat, never leaning. Use dividers or bookends.</li>
+        <li>Cool, dry, out of the sun. Keep away from windows, radiators, AC vents and hot cars. In a Dubai summer, never leave records in a car.</li>
+        <li>Brush before every play: a couple of turns, then slowly off toward the edge.</li>
+        <li>Deep clean dirty or second-hand records with vinyl cleaning fluid, wiping along the grooves, never across. Keep the label dry. No household cleaners or alcohol-heavy mixes.</li>
+        <li>Let records dry completely before sleeving or playing.</li>
+        <li>Outer sleeves protect the jacket from dust, ring wear and scuffs.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Turntable care</summary>
+      <ul>
+        <li>Clean the stylus with a stylus brush, back to front only, never side to side.</li>
+        <li>A stylus lasts roughly 500–1,000 hours depending on type. Worn signs: distortion, harsh "s" sounds, more crackle, skipping. A worn stylus damages records.</li>
+        <li>Set tracking force to the cartridge maker's number. Too light skips and rattles; too heavy wears record and stylus. Match anti-skate to it.</li>
+        <li>Keep the turntable level. Check with a bubble level on the platter.</li>
+        <li>Close the dust cover when the turntable isn't in use.</li>
+        <li>Wipe the platter mat now and then. Dust on the mat ends up on your records.</li>
+        <li>Replace a belt-drive belt every few years, or sooner if the speed drifts or the pitch wobbles.</li>
+        <li>Guard on and tonearm clipped before moving or cleaning the turntable.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Glossary</summary>
+      <dl>
+        <dt>Platter</dt><dd>The spinning plate the record sits on</dd>
+        <dt>Tonearm</dt><dd>The pivoting arm that holds the cartridge over the record</dd>
+        <dt>Stylus</dt><dd>The diamond tip that rides in the groove</dd>
+        <dt>Cantilever</dt><dd>The thin rod connecting the stylus to the cartridge</dd>
+        <dt>Cartridge</dt><dd>Converts the stylus's motion into an electrical signal</dd>
+        <dt>Phono preamp</dt><dd>Boosts the weak signal and applies RIAA equalization</dd>
+        <dt>RIAA equalization</dt><dd>The standard tone curve that undoes the bass cut and treble boost used when records are made</dd>
+        <dt>rpm</dt><dd>Revolutions per minute: 33⅓ for LPs, 45 for singles</dd>
+        <dt>Cue lever</dt><dd>A small lever that raises and lowers the tonearm gently</dd>
+        <dt>Tracking force</dt><dd>How hard the stylus presses down on the record, in grams</dd>
+        <dt>Anti-skate</dt><dd>A setting that stops the tonearm being pulled toward the centre</dd>
+        <dt>Run-out groove</dt><dd>The smooth loop at the end of a side, near the label</dd>
+      </dl>
+    </details>
+  </aside>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
